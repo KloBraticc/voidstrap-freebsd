@@ -49,7 +49,7 @@ jobs:
           mem: 12288
           prepare: |
             mkdir -p "${{ github.workspace }}/.freebsd-pkg"
-            env PKG_CACHEDIR="${{ github.workspace }}/.freebsd-pkg" pkg install -y bash git rust pkgconf xorgproto libX11 libxkbcommon icu libunwind libinotify krb5
+            env PKG_CACHEDIR="${{ github.workspace }}/.freebsd-pkg" pkg install -y bash git rust cmake-core pkgconf xorgproto libX11 libxkbcommon icu libunwind libinotify krb5
           run: |
             set -e
             ROOT="$PWD"
@@ -57,7 +57,7 @@ jobs:
             mkdir -p "$NATIVE" "$ROOT/.freebsd-wgpu" "$ROOT/.freebsd-cargo/home" "$ROOT/.freebsd-cargo/target" "$ROOT/out"
             cp "$ROOT/.freebsd-wgpu/"* "$NATIVE/" 2>/dev/null || true
             if [ ! -s "$NATIVE/libwgpu_native.so" ] || [ ! -s "$NATIVE/libglfw.so.3" ]; then
-              env PKG_CACHEDIR="$ROOT/.freebsd-pkg" pkg install -y cmake-core llvm libXrandr libXinerama libXcursor libXi vulkan-loader mesa-libs
+              env PKG_CACHEDIR="$ROOT/.freebsd-pkg" pkg install -y llvm libXrandr libXinerama libXcursor libXi vulkan-loader mesa-libs
             fi
             SDK=dotnet-sdk-10.0.110-freebsd-x64.tar.gz
             SUM=b692f5d559639aee04bcabd1d1e0236060ace16f544f18428f8bb21731519cc2
