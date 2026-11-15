@@ -43,7 +43,7 @@ jobs:
           usesh: true
           mem: 12288
           prepare: |
-            pkg install -y bash git rust pkgconf xorgproto libX11 libxkbcommon icu libunwind krb5
+            pkg install -y bash git rust pkgconf xorgproto libX11 libxkbcommon icu libunwind libinotify krb5
           run: |
             set -e
             ROOT="$PWD"
@@ -72,4 +72,4 @@ jobs:
           path: out/*.tar.gz
           if-no-files-found: error
           compression-level: 0
-          retention-days: 1
+          retention-days: 30
