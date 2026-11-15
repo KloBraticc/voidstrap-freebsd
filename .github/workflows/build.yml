@@ -19,26 +19,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.commit }}
           submodules: recursive
           fetch-depth: 1
           persist-credentials: false
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .freebsd-wgpu
           key: freebsd-wgpu-${{ hashFiles('build/Packaging/Linux/build-wgpu-native.sh', 'build/Packaging/Linux/build-glfw-native.sh') }}
 
       - id: cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .freebsd-cargo
           key: freebsd-cargo-${{ hashFiles('native/**/Cargo.lock', 'native/**/*.rs', 'native/**/Cargo.toml') }}
           restore-keys: freebsd-cargo-
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .freebsd-pkg
           key: freebsd-pkg-15.1
@@ -78,7 +78,7 @@ jobs:
             cp "$NATIVE/libwgpu_native.so" "$NATIVE/libglfw.so.3" "$ROOT/.freebsd-wgpu/"
             [ ! -f "$NATIVE/GLFW-LICENSE.txt" ] || cp "$NATIVE/GLFW-LICENSE.txt" "$ROOT/.freebsd-wgpu/"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: voidstrap-freebsd
           path: out/*.tar.gz
