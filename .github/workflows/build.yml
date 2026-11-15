@@ -49,7 +49,7 @@ jobs:
           mem: 12288
           prepare: |
             mkdir -p "${{ github.workspace }}/.freebsd-pkg"
-            env PKG_CACHEDIR="${{ github.workspace }}/.freebsd-pkg" pkg install -y bash git rust cmake-core pkgconf xorgproto libX11 libxkbcommon icu libunwind libinotify krb5
+            env PKG_CACHEDIR="${{ github.workspace }}/.freebsd-pkg" pkg install -y bash git-tiny rust cmake-core pkgconf xorgproto libX11 libxkbcommon icu libunwind libinotify krb5
           run: |
             set -e
             ROOT="$PWD"
