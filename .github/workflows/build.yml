@@ -28,8 +28,14 @@ jobs:
 
       - uses: actions/cache@v4
         with:
-          path: .freebsd-native
-          key: freebsd-native-${{ hashFiles('build/Packaging/Linux/build-wgpu-native.sh', 'build/Packaging/Linux/build-glfw-native.sh') }}
+          path: .freebsd-wgpu
+          key: freebsd-wgpu-${{ hashFiles('build/Packaging/Linux/build-wgpu-native.sh', 'build/Packaging/Linux/build-glfw-native.sh') }}
+
+      - uses: actions/cache@v4
+        with:
+          path: .freebsd-cargo
+          key: freebsd-cargo-${{ hashFiles('native/**/Cargo.lock', 'native/**/*.rs', 'native/**/Cargo.toml') }}
+          restore-keys: freebsd-cargo-
 
       - uses: vmactions/freebsd-vm@v1
         with:
@@ -37,10 +43,16 @@ jobs:
           usesh: true
           mem: 12288
           prepare: |
-            pkg install -y bash git cmake rust llvm pkgconf xorgproto libX11 libXext libXrandr libXinerama libXcursor libXi libXcomposite libXdamage libxkbcommon fontconfig freetype2 vulkan-loader mesa-libs sqlite3 libarchive onnxruntime ffmpeg icu libinotify libunwind brotli krb5
+            pkg install -y bash git rust pkgconf xorgproto libX11 libxkbcommon icu libunwind krb5
           run: |
             set -e
             ROOT="$PWD"
+            NATIVE="$ROOT/external/LibreWPF/freebsd-x64"
+            mkdir -p "$NATIVE" "$ROOT/.freebsd-wgpu" "$ROOT/.freebsd-cargo/home" "$ROOT/.freebsd-cargo/target" "$ROOT/out"
+            cp "$ROOT/.freebsd-wgpu/"* "$NATIVE/" 2>/dev/null || true
+            if [ ! -s "$NATIVE/libwgpu_native.so" ] || [ ! -s "$NATIVE/libglfw.so.3" ]; then
+              pkg install -y cmake-core llvm libXrandr libXinerama libXcursor libXi vulkan-loader mesa-libs
+            fi
             SDK=dotnet-sdk-10.0.110-freebsd-x64.tar.gz
             SUM=b692f5d559639aee04bcabd1d1e0236060ace16f544f18428f8bb21731519cc2
             fetch -q -o "/tmp/$SDK" "https://github.com/sec/dotnet-core-freebsd-source-build/releases/download/10.0.110-vmr/$SDK"
@@ -48,13 +60,11 @@ jobs:
             mkdir -p /usr/local/dotnet10
             tar -xzf "/tmp/$SDK" -C /usr/local/dotnet10
             export DOTNET_ROOT=/usr/local/dotnet10 PATH="/usr/local/dotnet10:$PATH" DOTNET_OPENSSL_VERSION_OVERRIDE=35 DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+            export CARGO_HOME="$ROOT/.freebsd-cargo/home" VOIDSTRAP_NATIVE_TARGET_ROOT="$ROOT/.freebsd-cargo/target"
             sed -i '' 's/"version": "[^"]*"/"version": "10.0.110"/' global.json
-            NATIVE="$ROOT/external/LibreWPF/freebsd-x64"
-            mkdir -p "$NATIVE" "$ROOT/.freebsd-native" "$ROOT/out"
-            cp "$ROOT/.freebsd-native/"* "$NATIVE/" 2>/dev/null || true
             bash build/Packaging/FreeBSD/package.sh '' "$ROOT/out"
-            cp "$NATIVE/libwgpu_native.so" "$NATIVE/libglfw.so.3" "$ROOT/.freebsd-native/"
-            [ ! -f "$NATIVE/GLFW-LICENSE.txt" ] || cp "$NATIVE/GLFW-LICENSE.txt" "$ROOT/.freebsd-native/"
+            cp "$NATIVE/libwgpu_native.so" "$NATIVE/libglfw.so.3" "$ROOT/.freebsd-wgpu/"
+            [ ! -f "$NATIVE/GLFW-LICENSE.txt" ] || cp "$NATIVE/GLFW-LICENSE.txt" "$ROOT/.freebsd-wgpu/"
 
       - uses: actions/upload-artifact@v4
         with:
